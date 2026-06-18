@@ -6,6 +6,7 @@
 <title>Informe de Ingresos · Exologística Nike</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -210,6 +211,7 @@ var MES_NUM=parseInt(MES.split('-')[1]);
 function mesFmt(mk){var p=mk.split('-');return MESES_ES[+p[1]-1]+' '+p[0];}
 
 Chart.defaults.color='#64748b';Chart.defaults.borderColor='#e2e6ef';Chart.defaults.font.family='Inter';
+Chart.register(ChartDataLabels);
 
 function mkKpi(lbl,val,sub,cls){
   return'<div class="kpi '+(cls||'')+'"><div class="kpi-lbl">'+lbl+'</div><div class="kpi-val">'+val+'</div><div class="kpi-sub">'+sub+'</div></div>';
@@ -245,11 +247,20 @@ function barChart(id,labels,data1,data2,color1,color2,lbl1,lbl2){
   new Chart(document.getElementById(id),{
     type:'bar',
     data:{labels:labels,datasets:[
-      {label:lbl1,data:data1,backgroundColor:color1+'50',borderColor:color1,borderWidth:2,borderRadius:6},
-      {label:lbl2,data:data2,backgroundColor:color2+'50',borderColor:color2,borderWidth:2,borderRadius:6}
+      {label:lbl1,data:data1,backgroundColor:color1+'50',borderColor:color1,borderWidth:2,borderRadius:6,
+        datalabels:{anchor:'end',align:'top',color:color1,font:{size:9,weight:'700'},formatter:function(v){return v>0?v.toLocaleString('es-AR'):'';}
+      }},
+      {label:lbl2,data:data2,backgroundColor:color2+'50',borderColor:color2,borderWidth:2,borderRadius:6,
+        datalabels:{anchor:'end',align:'top',color:color2,font:{size:9,weight:'700'},formatter:function(v){return v>0?v.toLocaleString('es-AR'):'';}
+      }}
     ]},
-    options:{responsive:true,plugins:{legend:{labels:{color:'#94a3b8',font:{size:10},boxWidth:10}}},
-      scales:{x:{ticks:{color:'#64748b'},grid:{display:false}},y:{ticks:{color:'#64748b'},grid:{color:'#f0f2f7'},beginAtZero:true}}}
+    options:{responsive:true,
+      plugins:{
+        legend:{labels:{color:'#94a3b8',font:{size:10},boxWidth:10}},
+        datalabels:{display:true}
+      },
+      scales:{x:{ticks:{color:'#64748b'},grid:{display:false}},y:{ticks:{color:'#64748b'},grid:{color:'#f0f2f7'},beginAtZero:true,grace:'15%'}}
+    }
   });
 }
 
@@ -303,9 +314,17 @@ async function build(){
       data:{labels:['Nacional','Importado'],datasets:[{
         data:[nac.length,imp.length],
         backgroundColor:['#1A2B5E80','#E31E2480'],
-        borderColor:['#1A2B5E','#E31E24'],borderWidth:2
+        borderColor:['#1A2B5E','#E31E24'],borderWidth:2,
+        datalabels:{color:'#fff',font:{size:11,weight:'700'},formatter:function(v,ctx){
+          var lbl=ctx.chart.data.labels[ctx.dataIndex];
+          return lbl+'
+'+v;
+        }}
       }]},
-      options:{responsive:true,plugins:{legend:{labels:{color:'#64748b',font:{size:11},boxWidth:12}}},cutout:'60%'}
+      options:{responsive:true,plugins:{
+        legend:{labels:{color:'#64748b',font:{size:11},boxWidth:12}},
+        datalabels:{display:true}
+      },cutout:'60%'}
     });
 
     // Gráfico BU global
