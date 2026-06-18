@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Informe de Ingresos · Exologística Nike</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#ffffff;--surface:#f8f9fc;--surface2:#f0f2f7;--border:#e2e6ef;
+  --red:#E31E24;--red-dim:#E31E2410;--navy:#1A2B5E;--navy-dim:#1A2B5E10;
+  --green:#16a34a;--green-dim:#16a34a12;--yellow:#d97706;--red-kpi:#dc2626;
+  --text:#0f172a;--muted:#64748b;--muted2:#94a3b8;--mono:'DM Mono',monospace;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;font-size:14px;line-height:1.5}
+.page{max-width:1100px;margin:0 auto;padding:0 40px 80px}
+
+/* COVER */
+.cover{position:relative;height:480px;border-radius:0 0 24px 24px;overflow:hidden;margin-bottom:56px}
+.cover-img{position:absolute;inset:0;background-size:cover;background-position:center;filter:brightness(0.5) saturate(0.7)}
+.cover-overlay{position:absolute;inset:0;background:linear-gradient(135deg,rgba(26,43,94,0.85) 0%,rgba(227,30,36,0.4) 60%,transparent 100%)}
+.cover-content{position:relative;z-index:2;height:100%;display:flex;flex-direction:column;justify-content:flex-end;padding:48px}
+.cover-eyebrow{font-size:11px;font-weight:700;letter-spacing:.14em;color:rgba(255,255,255,0.7);text-transform:uppercase;margin-bottom:12px}
+.cover-title{font-size:clamp(36px,5vw,60px);font-weight:900;line-height:1.05;letter-spacing:-1.5px;color:#fff;margin-bottom:8px}
+.cover-title span{color:#ff6b6b}
+.cover-sub{font-size:14px;color:rgba(255,255,255,0.7);margin-bottom:36px}
+.cover-meta{display:flex;gap:32px;flex-wrap:wrap}
+.cover-stat-val{font-size:26px;font-weight:800;color:#fff;font-family:var(--mono);display:block}
+.cover-stat-lbl{font-size:10px;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:.08em}
+.cover-badge{position:absolute;top:32px;right:40px;background:rgba(255,255,255,0.15);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.2);border-radius:12px;padding:12px 20px;z-index:2;display:flex;align-items:center;gap:12px}
+.cover-badge-text{color:#fff;font-size:12px;font-weight:700}
+
+/* SECTION */
+.section{padding:48px 0 0}
+.section-eyebrow{font-size:10px;font-weight:700;letter-spacing:.14em;color:var(--red);text-transform:uppercase;margin-bottom:6px}
+.section-title{font-size:24px;font-weight:800;letter-spacing:-0.5px;color:var(--navy);margin-bottom:8px;padding-bottom:12px;border-bottom:3px solid var(--red)}
+.section-title span{color:var(--muted);font-weight:500}
+
+/* KPI ROW */
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:24px 0}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;border-top:3px solid var(--border)}
+.kpi.green{border-top-color:var(--green);background:#f0fdf4}
+.kpi.red{border-top-color:var(--red-kpi);background:#fef2f2}
+.kpi.navy{border-top-color:var(--navy);background:#f0f4ff}
+.kpi.orange{border-top-color:var(--yellow);background:#fffbeb}
+.kpi-lbl{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.kpi-val{font-size:28px;font-weight:900;line-height:1;font-family:var(--mono);margin-bottom:4px;color:var(--navy)}
+.kpi-sub{font-size:11px;color:var(--muted)}
+.kpi.green .kpi-val{color:var(--green)}
+.kpi.red .kpi-val{color:var(--red-kpi)}
+.kpi.navy .kpi-val{color:var(--navy)}
+
+/* CHART CARD */
+.chart-card{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:22px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
+.chart-hdr{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:18px}
+.chart-title{font-size:13px;font-weight:700;color:var(--navy)}
+.chart-sub{font-size:11px;color:var(--muted)}
+
+/* TABLE */
+.tbl-card{background:var(--bg);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
+.tbl-hdr{padding:14px 18px;border-bottom:1px solid var(--border);font-size:13px;font-weight:700;color:var(--navy);display:flex;justify-content:space-between;align-items:center;background:var(--surface)}
+table{width:100%;border-collapse:collapse}
+th{padding:9px 16px;text-align:left;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);background:var(--surface)}
+td{padding:11px 16px;border-bottom:1px solid var(--surface2);font-size:13px;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--surface)}
+
+/* BAR */
+.bar-wrap{display:flex;align-items:center;gap:8px}
+.bar-track{flex:1;height:5px;background:var(--surface2);border-radius:3px;overflow:hidden;min-width:60px}
+.bar-fill{height:100%;border-radius:3px}
+.bar-val{font-family:var(--mono);font-size:12px;font-weight:700;min-width:40px;text-align:right}
+
+/* PILLS */
+.pill{display:inline-block;padding:3px 8px;border-radius:8px;font-size:10px;font-weight:700;letter-spacing:.03em}
+.pill-green{background:#dcfce7;color:#15803d;border:1px solid #bbf7d0}
+.pill-red{background:#fee2e2;color:#dc2626;border:1px solid #fecaca}
+.pill-yellow{background:#fef3c7;color:#d97706;border:1px solid #fde68a}
+.pill-navy{background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe}
+
+/* DIVIDER */
+.section-divider{height:2px;background:linear-gradient(90deg,var(--red),var(--navy));margin:48px 0 0;border-radius:2px}
+
+/* FLUJO BADGE */
+.flujo-l4l{background:#1A2B5E15;color:#1A2B5E;border:1px solid #1A2B5E30}
+.flujo-impo{background:#E31E2415;color:#E31E24;border:1px solid #E31E2430}
+
+/* FOOTER */
+.foot{padding:32px 0;display:flex;justify-content:space-between;align-items:center;border-top:2px solid var(--navy);margin-top:48px}
+.foot-l{font-size:11px;color:var(--muted);font-weight:600}
+.foot-r{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.08em}
+
+/* LOADING */
+.loading{display:flex;align-items:center;justify-content:center;min-height:60vh;flex-direction:column;gap:16px;color:var(--muted)}
+.spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--red);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* GRID */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:700px){.grid-2{grid-template-columns:1fr}}
+
+/* FLUJO SECTION CARDS */
+.flujo-card{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:22px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
+.flujo-card-hdr{display:flex;align-items:center;gap:12px;margin-bottom:18px;padding-bottom:12px;border-bottom:2px solid}
+.flujo-card-hdr.l4l{border-color:var(--navy)}
+.flujo-card-hdr.impo{border-color:var(--red)}
+
+/* SMALL KPI */
+.small-kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.small-kpi{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;border-top:3px solid}
+.small-kpi-lbl{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+.small-kpi-val{font-size:22px;font-weight:900;font-family:var(--mono);color:var(--navy)}
+
+/* TOP5 */
+.top5-hdr{background:linear-gradient(90deg,var(--red-dim),transparent);border-bottom:2px solid var(--red)}
+
+@media print{
+  .no-print{display:none!important}
+  body{background:#fff;color:#000;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .cover{border-radius:0;height:380px}
+  .cover-img{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .page{padding:0 24px 40px}
+  .section{padding:32px 0 0}
+  .chart-card,.tbl-card,.flujo-card,.kpi{break-inside:avoid}
+  .grid-2{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+
+<div id="loadingScreen" class="loading">
+  <div class="spinner"></div>
+  <div>Cargando datos de ingresos...</div>
+</div>
+
+<div id="report" style="display:none">
+<div class="page">
+
+<!-- COVER — misma foto de fondo que informe pickers -->
+<div class="cover">
+  <div class="cover-img" style="background-image:url('data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAAyAFADASIAAhEBAxEB/8QAGwAAAgMBAQEAAAAAAAAAAAAABAUCAwYBAAf/xAArEAACAQMDAwMEAwEAAAAAAAABAgMABBEFEiExBhNBUWEUIjJxgZGhwf/EABgBAAMBAQAAAAAAAAAAAAAAAAECAwAE/8QAHREAAgMBAQEBAQAAAAAAAAAAAQIAEQMSIUExE//aAAwDAQACEQMRAD8A+Y6Vpt1qcxis4i7AZJ6AAdST0A+TVSXR7qK4EJA3k4GDkH6HpWt8EeB73xbc3MdvNFbpax75JJM4GSQFAHJJx+tXuJ/CmXQdNXVbTUVureSQRsGhMbIxBIBBJ7jj71m5yT2N4xv2KSeHdUhYhrZj7g5AFQ3Wm3dm4S4hKk9Mcia2s2s2j2o09IJWWFi8jTLkuT3A7Ae1X9Xs4IY1eGMJu5OepoWbSi3X/B7LQ3aouiG1wQJc7yvfPoalbSppAV52jr3q1KhjyI0CZ6DpSvTj/XLez5P6VZWZ1O2NrIyMVPcA4I/eqXiLR7bRNOsdoLXtzMrTSMQQqAE7VA7HkZPbIFaJMCokNsEQJnnHfvVPxhYvqFl4ftoypSTU7eJy3QKynk/p/OotJdF0e+j5/qelJPqU87f4ZdijA/lPBH6VWlQh9zIVOOcitHrenTWFjbRXBVmefbkHPCqx/rNQajbpb6jcwxf4Y5WVc9cAnGa6HKWzO2pxj/pu+F7K5v9ftLWzjEk8jkIrOFz8ncnoO9ew+E/CEnhi5vrq6vhd3V2URmEexVRATtAySepOfpXk/wCz27aDxLDdqJTHHv3xI4RpFKkFQx6ZBP2r1vw7r1lrQubW0vluJbRR5oKMhTJ4yCB3FY5rTRrBp7MNLNK6KqyNgDACqBgfYUlyftS3BYHA6jFJ9P03WJdRurpIIFe3CooaQjIHB6D6mtvZeMNb0YDGZR/mH/AHT/AOaSSM3J0z//2Q==')"></div>
+  <div class="cover-overlay"></div>
+  <div class="cover-badge">
+    <div>
+      <div class="cover-badge-text">EXOLOGÍSTICA</div>
+      <div style="font-size:10px;color:rgba(255,255,255,0.6)">Operación Nike · PLEE</div>
+    </div>
+  </div>
+  <button onclick="window.print()" class="no-print" style="position:absolute;top:24px;left:32px;z-index:10;background:rgba(255,255,255,0.15);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.3);border-radius:8px;padding:6px 12px;color:#fff;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">⬇ PDF</button>
+  <div class="cover-content">
+    <div class="cover-eyebrow">Informe de Cierre de Mes · Confidencial</div>
+    <h1 class="cover-title">Ingresos<br><span id="coverMes">—</span></h1>
+    <p class="cover-sub">Control de embarques — L4L e Importado</p>
+    <div class="cover-meta">
+      <div><span class="cover-stat-val" id="coverEmbarques">—</span><span class="cover-stat-lbl">Embarques controlados</span></div>
+      <div><span class="cover-stat-val" id="coverDeclarado">—</span><span class="cover-stat-lbl">Unidades declaradas</span></div>
+      <div><span class="cover-stat-val" id="coverControlado">—</span><span class="cover-stat-lbl">Unidades controladas</span></div>
+      <div><span class="cover-stat-val" id="coverCumpl">—</span><span class="cover-stat-lbl">Cumplimiento global</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- KPIs GLOBALES -->
+<div class="section">
+  <div class="section-eyebrow">Resumen ejecutivo</div>
+  <div class="section-title">Mes completo <span>· L4L + Importado</span></div>
+  <div class="kpi-row" id="kpiGlobal"></div>
+</div>
+
+<!-- L4L -->
+<div class="section">
+  <div class="section-divider"></div>
+  <div style="padding-top:48px">
+  <div class="section-eyebrow">Módulo 01</div>
+  <div class="section-title">L4L <span>· Sourcing Nacional</span></div>
+
+  <div class="small-kpi-grid" id="kpiL4l"></div>
+
+  <div class="grid-2">
+    <div class="chart-card">
+      <div class="chart-hdr">
+        <div class="chart-title">Declarado vs Controlado por CIA</div>
+        <div class="chart-sub" style="color:var(--navy);font-weight:600">L4L</div>
+      </div>
+      <canvas id="chartL4lCia" height="120"></canvas>
+    </div>
+    <div class="chart-card">
+      <div class="chart-hdr">
+        <div class="chart-title">Embarques por semana</div>
+        <div class="chart-sub">L4L · volumen de control</div>
+      </div>
+      <canvas id="chartL4lSem" height="120"></canvas>
+    </div>
+  </div>
+
+  <div class="tbl-card">
+    <div class="tbl-hdr">
+      <span>Detalle L4L</span>
+      <span style="font-size:10px;color:var(--muted)">Todos los embarques del mes</span>
+    </div>
+    <table>
+      <thead><tr>
+        <th>CIA</th><th>Nro. Embarque</th><th>Fecha</th>
+        <th>Declarado</th><th>Controlado</th><th>Dif.</th><th>% Cumpl.</th>
+        <th>Incidencia</th><th>PDF</th>
+      </tr></thead>
+      <tbody id="tablaL4l"></tbody>
+    </table>
+  </div>
+  </div>
+</div>
+
+<!-- IMPO -->
+<div class="section">
+  <div class="section-divider"></div>
+  <div style="padding-top:48px">
+  <div class="section-eyebrow">Módulo 02</div>
+  <div class="section-title">Importado <span>· Sourcing Internacional</span></div>
+
+  <div class="small-kpi-grid" id="kpiImpo"></div>
+
+  <div class="grid-2">
+    <div class="chart-card">
+      <div class="chart-hdr">
+        <div class="chart-title">Declarado vs Controlado por CIA</div>
+        <div class="chart-sub" style="color:var(--red);font-weight:600">IMPO</div>
+      </div>
+      <canvas id="chartImpoCia" height="120"></canvas>
+    </div>
+    <div class="chart-card">
+      <div class="chart-hdr">
+        <div class="chart-title">Embarques por semana</div>
+        <div class="chart-sub">IMPO · volumen de control</div>
+      </div>
+      <canvas id="chartImpoSem" height="120"></canvas>
+    </div>
+  </div>
+
+  <div class="tbl-card">
+    <div class="tbl-hdr">
+      <span>Detalle IMPO</span>
+      <span style="font-size:10px;color:var(--muted)">Todos los embarques del mes</span>
+    </div>
+    <table>
+      <thead><tr>
+        <th>CIA</th><th>Nro. Embarque</th><th>Fecha</th>
+        <th>Declarado</th><th>Controlado</th><th>Dif.</th><th>% Cumpl.</th>
+        <th>Incidencia</th><th>PDF</th>
+      </tr></thead>
+      <tbody id="tablaImpo"></tbody>
+    </table>
+  </div>
+  </div>
+</div>
+
+<!-- TOP 5 INCIDENCIAS -->
+<div class="section">
+  <div class="section-divider"></div>
+  <div style="padding-top:48px">
+  <div class="section-eyebrow">Análisis de incidencias</div>
+  <div class="section-title">Top 5 <span>· Embarques con mayor desvío</span></div>
+
+  <div class="kpi-row" id="kpiInc"></div>
+
+  <div class="tbl-card">
+    <div class="tbl-hdr top5-hdr">
+      <span style="color:var(--red);font-weight:800">Top 5 embarques — mayor impacto</span>
+      <span style="font-size:10px;color:var(--muted2)">Ordenados por diferencia absoluta · soportados por PDF</span>
+    </div>
+    <table>
+      <thead><tr>
+        <th>#</th><th>Embarque</th><th>Flujo</th><th>CIA</th><th>Fecha</th>
+        <th>Declarado</th><th>Controlado</th><th>Diferencia</th><th>Tipo incidencia</th><th>PDF</th>
+      </tr></thead>
+      <tbody id="top5Tabla"></tbody>
+    </table>
+  </div>
+
+  <!-- Tipos de incidencia breakdown -->
+  <div class="chart-card">
+    <div class="chart-hdr">
+      <div class="chart-title">Incidencias por tipo</div>
+      <div class="chart-sub">distribución mes completo</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:center">
+      <canvas id="chartIncTipo" height="160"></canvas>
+      <div id="incTipoLegend" style="display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+  </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="foot">
+  <div class="foot-l">Exologística · Operación Nike · PLEE · Confidencial · Uso restringido</div>
+  <div class="foot-r" id="footFecha"></div>
+</div>
+
+</div><!-- /page -->
+</div><!-- /report -->
+
+<script>
+var SB_URL='https://mepgeidrcrsaqvcihslm.supabase.co';
+var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lcGdlaWRyY3JzYXF2Y2loc2xtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3MzI3OTcsImV4cCI6MjA5NDMwODc5N30.1dji3baHAGyfcNfqPz9Nxu_BChRQqmt57jFJplCM8K4';
+var SBH={'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY};
+
+var MESES_ES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+function curMK(){var d=new Date();return d.getFullYear()+'-'+(d.getMonth()<9?'0':'')+(d.getMonth()+1);}
+var MES=new URLSearchParams(window.location.search).get('mes')||curMK();
+function mesFmt(mk){var p=mk.split('-');return MESES_ES[+p[1]-1]+' '+p[0];}
+
+Chart.defaults.color='#64748b';Chart.defaults.borderColor='#e2e6ef';Chart.defaults.font.family='Inter';
+
+async function loadIngresos(){
+  var r=await fetch(SB_URL+'/rest/v1/ingresos_data?date_key=like.'+MES+'*&select=date_key,data&order=date_key.asc',{headers:SBH});
+  var rows=await r.json();
+  // Flatten todos los items
+  var all=[];
+  rows.forEach(function(row){
+    var day=row.data;
+    ['TM','TT','TN'].forEach(function(sh){
+      (day[sh]||[]).forEach(function(u){
+        all.push(Object.assign({},u,{date:row.date_key,turno:sh}));
+      });
+    });
+  });
+  return all;
+}
+
+function stats(subset){
+  var embarques=subset.length;
+  var declarado=subset.reduce(function(s,u){return s+(+u.declarado||0);},0);
+  var controlado=subset.reduce(function(s,u){return s+(+u.controlado||0);},0);
+  var dif=controlado-declarado;
+  var pct=declarado?Math.round(controlado/declarado*100):0;
+  var sinInc=subset.filter(function(u){return !u.incidencia||u.incidencia===''||u.incidencia.toLowerCase()==='sin incidencia';}).length;
+  var byCIA={FTW:{dec:0,ctrl:0},APP:{dec:0,ctrl:0},EQP:{dec:0,ctrl:0}};
+  subset.forEach(function(u){if(byCIA[u.cia]){byCIA[u.cia].dec+=(+u.declarado||0);byCIA[u.cia].ctrl+=(+u.controlado||0);}});
+  var bySem={};
+  subset.forEach(function(u){var s=Math.ceil(+(u.date||'').split('-')[2]/7);if(!bySem[s])bySem[s]=0;bySem[s]++;});
+  var byTipo={};
+  subset.forEach(function(u){if(u.incidencia&&u.incidencia.toLowerCase()!=='sin incidencia'&&u.incidencia!==''){var t=u.tipo_incidencia||u.incidencia;if(!byTipo[t])byTipo[t]=0;byTipo[t]++;}});
+  return{embarques,declarado,controlado,dif,pct,sinInc,conInc:embarques-sinInc,byCIA,bySem,byTipo};
+}
+
+function mkKpi(lbl,val,sub,cls){
+  return'<div class="kpi '+(cls||'')+'"><div class="kpi-lbl">'+lbl+'</div><div class="kpi-val">'+val+'</div><div class="kpi-sub">'+sub+'</div></div>';
+}
+function mkSmallKpi(lbl,val,color){
+  return'<div class="small-kpi" style="border-top-color:'+color+'">'+
+    '<div class="small-kpi-lbl">'+lbl+'</div>'+
+    '<div class="small-kpi-val" style="color:'+color+'">'+val+'</div></div>';
+}
+function mkBar(val,max,color){
+  var p=max>0?Math.min(100,Math.round(val/max*100)):0;
+  return'<div class="bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:'+p+'%;background:'+color+'"></div></div>'+
+    '<span class="bar-val" style="color:'+color+'">'+val.toLocaleString('es-AR')+'</span></div>';
+}
+function rowTabla(u){
+  var dif=(+u.controlado||0)-(+u.declarado||0);
+  var pct=u.declarado?Math.round((+u.controlado||0)/(+u.declarado)*100):0;
+  var pctColor=pct>=98?'var(--green)':pct>=95?'var(--yellow)':'var(--red-kpi)';
+  var incTxt=u.incidencia||'Sin incidencia';
+  var incCls=incTxt.toLowerCase()==='sin incidencia'||incTxt===''?'pill-green':'pill-red';
+  var dateStr=(u.date||'').split('-').reverse().join('/');
+  return'<tr>'+
+    '<td><strong>'+u.cia+'</strong></td>'+
+    '<td style="font-family:var(--mono);font-size:12px;color:var(--muted2)">'+(u.embarque||'—')+'</td>'+
+    '<td style="font-size:11px;color:var(--muted2)">'+dateStr+'</td>'+
+    '<td style="font-family:var(--mono)">'+(+u.declarado||0).toLocaleString('es-AR')+'</td>'+
+    '<td style="font-family:var(--mono)">'+(+u.controlado||0).toLocaleString('es-AR')+'</td>'+
+    '<td style="font-family:var(--mono);color:'+(dif<0?'var(--red-kpi)':dif>0?'var(--yellow)':'var(--muted2)')+';">'+(dif>0?'+':'')+dif+'</td>'+
+    '<td><span style="font-size:12px;font-weight:700;color:'+pctColor+'">'+pct+'%</span></td>'+
+    '<td><span class="pill '+incCls+'" style="font-size:9px">'+incTxt+'</span></td>'+
+    '<td style="text-align:center">'+(u.tiene_pdf==='S'||u.tiene_pdf===true?'📄':'—')+'</td>'+
+    '</tr>';
+}
+
+function mkBarChart(canvasId,labels,dec,ctrl,color){
+  new Chart(document.getElementById(canvasId),{
+    type:'bar',
+    data:{labels:labels,datasets:[
+      {label:'Declarado',data:dec,backgroundColor:color+'40',borderColor:color,borderWidth:2,borderRadius:6},
+      {label:'Controlado',data:ctrl,backgroundColor:'#16a34a40',borderColor:'#16a34a',borderWidth:2,borderRadius:6}
+    ]},
+    options:{responsive:true,plugins:{legend:{labels:{color:'#94a3b8',font:{size:10},boxWidth:10}}},
+      scales:{x:{ticks:{color:'#64748b'},grid:{display:false}},y:{ticks:{color:'#64748b'},grid:{color:'#f0f2f7'},beginAtZero:true}}}
+  });
+}
+
+async function build(){
+  try{
+    var all=await loadIngresos();
+    var l4l=all.filter(function(u){return(u.flujo||'').toUpperCase()==='L4L';});
+    var impo=all.filter(function(u){return(u.flujo||'').toUpperCase()==='IMPO';});
+    var sl=stats(l4l), si=stats(impo);
+    var sg=stats(all);
+
+    // Cover
+    document.getElementById('coverMes').textContent=mesFmt(MES);
+    document.getElementById('coverEmbarques').textContent=sg.embarques;
+    document.getElementById('coverDeclarado').textContent=sg.declarado.toLocaleString('es-AR');
+    document.getElementById('coverControlado').textContent=sg.controlado.toLocaleString('es-AR');
+    document.getElementById('coverCumpl').textContent=sg.pct+'%';
+    document.getElementById('footFecha').textContent='Generado '+new Date().toLocaleDateString('es-AR');
+
+    // KPIs globales
+    var difColor=sg.dif<0?'red':sg.dif>0?'orange':'green';
+    document.getElementById('kpiGlobal').innerHTML=
+      mkKpi('Embarques controlados',sg.embarques,'L4L + IMPO','navy')+
+      mkKpi('Unidades declaradas',sg.declarado.toLocaleString('es-AR'),'total mes','')+
+      mkKpi('Unidades controladas',sg.controlado.toLocaleString('es-AR'),'total mes','')+
+      mkKpi('Diferencia',(sg.dif>0?'+':'')+sg.dif.toLocaleString('es-AR'),'ctrl − declarado',difColor)+
+      mkKpi('Cumplimiento global',sg.pct+'%','controlado / declarado',sg.pct>=98?'green':sg.pct>=95?'orange':'red')+
+      mkKpi('Con incidencias',sg.conInc,'embarques',sg.conInc===0?'green':'red');
+
+    // L4L KPIs
+    document.getElementById('kpiL4l').innerHTML=
+      mkSmallKpi('Embarques',sl.embarques,'#1A2B5E')+
+      mkSmallKpi('Dec.',sl.declarado.toLocaleString('es-AR'),'#64748b')+
+      mkSmallKpi('Ctrl.',sl.controlado.toLocaleString('es-AR'),'#16a34a')+
+      mkSmallKpi('Diferencia',(sl.dif>0?'+':'')+sl.dif,sl.dif<0?'#dc2626':'#16a34a')+
+      mkSmallKpi('Cumplimiento',sl.pct+'%',sl.pct>=98?'#16a34a':sl.pct>=95?'#d97706':'#dc2626')+
+      mkSmallKpi('Con incidencia',sl.conInc,sl.conInc===0?'#16a34a':'#dc2626');
+
+    mkBarChart('chartL4lCia',['FTW','APP','EQP'],
+      [sl.byCIA.FTW.dec,sl.byCIA.APP.dec,sl.byCIA.EQP.dec],
+      [sl.byCIA.FTW.ctrl,sl.byCIA.APP.ctrl,sl.byCIA.EQP.ctrl],'#1A2B5E');
+
+    // L4L semanal
+    var semKeys=Object.keys(sl.bySem).sort(function(a,b){return+a-+b;});
+    new Chart(document.getElementById('chartL4lSem'),{
+      type:'bar',
+      data:{labels:semKeys.map(function(s){return'Sem '+s;}),datasets:[{
+        label:'Embarques',data:semKeys.map(function(s){return sl.bySem[s];}),
+        backgroundColor:'#1A2B5E80',borderColor:'#1A2B5E',borderWidth:2,borderRadius:6}]},
+      options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#64748b'},grid:{display:false}},y:{ticks:{color:'#64748b'},grid:{color:'#f0f2f7'},beginAtZero:true}}}
+    });
+
+    document.getElementById('tablaL4l').innerHTML=l4l.map(rowTabla).join('')||
+      '<tr><td colspan="9" style="text-align:center;color:var(--muted2);padding:24px">Sin embarques L4L registrados</td></tr>';
+
+    // IMPO KPIs
+    document.getElementById('kpiImpo').innerHTML=
+      mkSmallKpi('Embarques',si.embarques,'#E31E24')+
+      mkSmallKpi('Dec.',si.declarado.toLocaleString('es-AR'),'#64748b')+
+      mkSmallKpi('Ctrl.',si.controlado.toLocaleString('es-AR'),'#16a34a')+
+      mkSmallKpi('Diferencia',(si.dif>0?'+':'')+si.dif,si.dif<0?'#dc2626':'#16a34a')+
+      mkSmallKpi('Cumplimiento',si.pct+'%',si.pct>=98?'#16a34a':si.pct>=95?'#d97706':'#dc2626')+
+      mkSmallKpi('Con incidencia',si.conInc,si.conInc===0?'#16a34a':'#dc2626');
+
+    mkBarChart('chartImpoCia',['FTW','APP','EQP'],
+      [si.byCIA.FTW.dec,si.byCIA.APP.dec,si.byCIA.EQP.dec],
+      [si.byCIA.FTW.ctrl,si.byCIA.APP.ctrl,si.byCIA.EQP.ctrl],'#E31E24');
+
+    var semKeysI=Object.keys(si.bySem).sort(function(a,b){return+a-+b;});
+    new Chart(document.getElementById('chartImpoSem'),{
+      type:'bar',
+      data:{labels:semKeysI.map(function(s){return'Sem '+s;}),datasets:[{
+        label:'Embarques',data:semKeysI.map(function(s){return si.bySem[s];}),
+        backgroundColor:'#E31E2480',borderColor:'#E31E24',borderWidth:2,borderRadius:6}]},
+      options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#64748b'},grid:{display:false}},y:{ticks:{color:'#64748b'},grid:{color:'#f0f2f7'},beginAtZero:true}}}
+    });
+
+    document.getElementById('tablaImpo').innerHTML=impo.map(rowTabla).join('')||
+      '<tr><td colspan="9" style="text-align:center;color:var(--muted2);padding:24px">Sin embarques IMPO registrados</td></tr>';
+
+    // KPIs incidencias globales
+    var byTipoG={};
+    all.forEach(function(u){
+      if(u.incidencia&&u.incidencia.toLowerCase()!=='sin incidencia'&&u.incidencia!==''){
+        var t=u.tipo_incidencia||u.incidencia;
+        if(!byTipoG[t])byTipoG[t]=0;byTipoG[t]++;
+      }
+    });
+    var topTipo=Object.keys(byTipoG).sort(function(a,b){return byTipoG[b]-byTipoG[a];});
+    document.getElementById('kpiInc').innerHTML=
+      mkKpi('Total incidencias',sg.conInc,'embarques afectados',sg.conInc===0?'green':'red')+
+      mkKpi('L4L con incidencia',sl.conInc,'de '+sl.embarques+' embarques',sl.conInc===0?'green':'red')+
+      mkKpi('IMPO con incidencia',si.conInc,'de '+si.embarques+' embarques',si.conInc===0?'green':'red')+
+      mkKpi('Tipo más frecuente',topTipo.length?byTipoG[topTipo[0]]:'—',topTipo.length?topTipo[0]:'sin incidencias','red');
+
+    // Top 5
+    var conInc=all.filter(function(u){return u.incidencia&&u.incidencia.toLowerCase()!=='sin incidencia'&&u.incidencia!=='';});
+    var top5=conInc.sort(function(a,b){return Math.abs((+b.declarado||0)-(+b.controlado||0))-Math.abs((+a.declarado||0)-(+a.controlado||0));}).slice(0,5);
+    document.getElementById('top5Tabla').innerHTML=top5.map(function(u,i){
+      var dif=(+u.controlado||0)-(+u.declarado||0);
+      var flujoColor=(u.flujo||'').toUpperCase()==='L4L'?'#1A2B5E':'#E31E24';
+      return'<tr>'+
+        '<td style="font-weight:800;color:var(--red);font-size:16px">'+(i+1)+'</td>'+
+        '<td style="font-family:var(--mono);font-weight:600">'+(u.embarque||'—')+'</td>'+
+        '<td><span class="pill" style="background:'+flujoColor+'15;color:'+flujoColor+';border:1px solid '+flujoColor+'30">'+(u.flujo||'—')+'</span></td>'+
+        '<td style="font-weight:600">'+(u.cia||'—')+'</td>'+
+        '<td style="font-size:11px;color:var(--muted2)">'+(u.date||'').split('-').reverse().join('/')+'</td>'+
+        '<td style="font-family:var(--mono)">'+(+u.declarado||0).toLocaleString('es-AR')+'</td>'+
+        '<td style="font-family:var(--mono)">'+(+u.controlado||0).toLocaleString('es-AR')+'</td>'+
+        '<td style="font-family:var(--mono);color:var(--red-kpi);font-weight:800">'+(dif>0?'+':'')+dif+'</td>'+
+        '<td><span class="pill pill-red" style="font-size:9px">'+(u.tipo_incidencia||u.incidencia||'—')+'</span></td>'+
+        '<td style="text-align:center">'+(u.tiene_pdf==='S'||u.tiene_pdf===true?'📄 Sí':'—')+'</td>'+
+        '</tr>';
+    }).join('')||'<tr><td colspan="10" style="text-align:center;color:var(--muted2);padding:24px">Sin incidencias registradas este mes 🎉</td></tr>';
+
+    // Donut tipos incidencia
+    var tipoKeys=topTipo.slice(0,6);
+    var tipoVals=tipoKeys.map(function(t){return byTipoG[t];});
+    var paleta=['#E31E24','#1A2B5E','#d97706','#64748b','#16a34a','#7c3aed'];
+    if(tipoKeys.length>0){
+      new Chart(document.getElementById('chartIncTipo'),{
+        type:'doughnut',
+        data:{labels:tipoKeys,datasets:[{data:tipoVals,backgroundColor:paleta,borderWidth:2,borderColor:'#fff'}]},
+        options:{responsive:true,plugins:{legend:{display:false}},cutout:'60%'}
+      });
+      document.getElementById('incTipoLegend').innerHTML=tipoKeys.map(function(t,i){
+        return'<div style="display:flex;align-items:center;gap:8px">'+
+          '<div style="width:10px;height:10px;border-radius:2px;background:'+paleta[i]+';flex-shrink:0"></div>'+
+          '<span style="font-size:11px;color:var(--muted)">'+t+'</span>'+
+          '<span style="font-family:var(--mono);font-size:11px;font-weight:700;color:var(--navy);margin-left:auto">'+byTipoG[t]+'</span>'+
+          '</div>';
+      }).join('');
+    } else {
+      document.getElementById('incTipoLegend').innerHTML='<div style="color:var(--muted2);font-size:12px">Sin incidencias registradas</div>';
+    }
+
+    document.getElementById('loadingScreen').style.display='none';
+    document.getElementById('report').style.display='block';
+
+  }catch(e){
+    document.getElementById('loadingScreen').innerHTML='<div style="color:var(--red);font-family:var(--mono)">Error: '+e.message+'</div>';
+    console.error(e);
+  }
+}
+
+build();
+</script>
+</body>
+</html>
