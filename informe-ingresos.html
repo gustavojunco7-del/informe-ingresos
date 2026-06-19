@@ -211,7 +211,7 @@ var MES_NUM=parseInt(MES.split('-')[1]);
 function mesFmt(mk){var p=mk.split('-');return MESES_ES[+p[1]-1]+' '+p[0];}
 
 Chart.defaults.color='#64748b';Chart.defaults.borderColor='#e2e6ef';Chart.defaults.font.family='Inter';
-Chart.register(ChartDataLabels);
+if(typeof ChartDataLabels!=='undefined')Chart.register(ChartDataLabels);
 
 function mkKpi(lbl,val,sub,cls){
   return'<div class="kpi '+(cls||'')+'"><div class="kpi-lbl">'+lbl+'</div><div class="kpi-val">'+val+'</div><div class="kpi-sub">'+sub+'</div></div>';
