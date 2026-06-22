@@ -71,25 +71,12 @@ tr:hover td{background:var(--surface)}
 @keyframes spin{to{transform:rotate(360deg)}}
 @media(max-width:700px){.grid-2{grid-template-columns:1fr}.small-kpi-grid{grid-template-columns:1fr 1fr}}
 @media print{
-  @page{size:A4 landscape;margin:10mm 12mm}
   .no-print{display:none!important}
-  body{-webkit-print-color-adjust:exact;print-color-adjust:exact;font-size:11px}
-  .cover{border-radius:0;height:320px;margin-bottom:32px}
+  body{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .cover{border-radius:0;height:380px}
   .cover-img{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  .cover-title{font-size:40px}
-  .page{max-width:100%;padding:0 8px 24px}
-  .section{padding:24px 0 0}
-  .kpi-row{grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin:14px 0}
-  .kpi{padding:12px 14px}
-  .kpi-val{font-size:20px}
-  .grid-2{grid-template-columns:1fr 1fr;gap:10px}
-  .small-kpi-grid{grid-template-columns:repeat(4,1fr);gap:8px}
-  .chart-card,.tbl-card,.kpi,.small-kpi{break-inside:avoid}
-  .chart-card{padding:14px;margin-bottom:10px}
-  .tbl-card{margin-bottom:10px}
-  td,th{padding:6px 10px;font-size:10px}
-  .section-divider{margin:24px 0 0}
-  .foot{padding:16px 0;margin-top:24px}
+  .page{padding:0 24px 40px}
+  .chart-card,.tbl-card,.kpi{break-inside:avoid}
 }
 </style>
 </head>
@@ -133,13 +120,11 @@ tr:hover td{background:var(--surface)}
   <div class="grid-2">
     <div class="chart-card">
       <div class="chart-hdr"><div class="chart-title">Deliveries por origen</div><div class="chart-sub">Nacional vs Importado</div></div>
-      <canvas id="chartOrigen" height="120"></canvas>
-      <div id="tablaOrigenResumen" style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:8px"></div>
+      <canvas id="chartOrigen" height="140"></canvas>
     </div>
     <div class="chart-card">
       <div class="chart-hdr"><div class="chart-title">Unidades por BU</div><div class="chart-sub">FTW · APP · EQP</div></div>
-      <canvas id="chartBU" height="120"></canvas>
-      <div id="tablaBUResumen" style="margin-top:14px"></div>
+      <canvas id="chartBU" height="140"></canvas>
     </div>
   </div>
 </div>
@@ -154,7 +139,6 @@ tr:hover td{background:var(--surface)}
   <div class="chart-card">
     <div class="chart-hdr"><div class="chart-title">Unidades por BU — Nacional</div><div class="chart-sub">recibido vs total</div></div>
     <canvas id="chartNacBU" height="80"></canvas>
-    <div id="tablaNacBUResumen" style="margin-top:14px"></div>
   </div>
   <div class="tbl-card">
     <div class="tbl-hdr"><span>Detalle Nacional</span><span style="font-size:10px;color:var(--muted)">todos los deliveries del mes</span></div>
@@ -176,7 +160,6 @@ tr:hover td{background:var(--surface)}
   <div class="chart-card">
     <div class="chart-hdr"><div class="chart-title">Unidades por BU — Importado</div><div class="chart-sub">recibido vs total</div></div>
     <canvas id="chartImpBU" height="80"></canvas>
-    <div id="tablaImpBUResumen" style="margin-top:14px"></div>
   </div>
   <div class="tbl-card">
     <div class="tbl-hdr"><span>Detalle Importado</span><span style="font-size:10px;color:var(--muted)">todos los deliveries del mes</span></div>
@@ -265,23 +248,15 @@ function barChart(id,labels,data1,data2,color1,color2,lbl1,lbl2){
       {label:lbl1,data:data1,backgroundColor:color1+'50',borderColor:color1,borderWidth:2,borderRadius:6},
       {label:lbl2,data:data2,backgroundColor:color2+'50',borderColor:color2,borderWidth:2,borderRadius:6}
     ]},
-    options:{responsive:true,
-      plugins:{
-        legend:{labels:{color:'#94a3b8',font:{size:10},boxWidth:10}},
-        tooltip:{callbacks:{label:function(ctx){return ctx.dataset.label+': '+ctx.parsed.y.toLocaleString('es-AR');}}}
-      },
-      scales:{
-        x:{ticks:{color:'#64748b'},grid:{display:false}},
-        y:{ticks:{color:'#64748b',callback:function(v){return v.toLocaleString('es-AR');}},grid:{color:'#f0f2f7'},beginAtZero:true}
-      }
-    }
+    options:{responsive:true,plugins:{legend:{labels:{color:'#94a3b8',font:{size:10},boxWidth:10}}},
+      scales:{x:{ticks:{color:'#64748b'},grid:{display:false}},y:{ticks:{color:'#64748b'},grid:{color:'#f0f2f7'},beginAtZero:true}}}
   });
 }
 
 async function build(){
   try{
     // Traer todos los datos del mes
-    var r=await fetch(SB_URL+'/rest/v1/ingresos_data?mes=eq.'+MES_NUM+'&select=id,delivery_key,fecha_llegada,origen,proveedor,nro_despacho,embarque,nro_delivery,bu,bultos,unidades,fisico,cargado_infor,estado,observacion,fecha_gr,mes&limit=5000',{headers:SBH});
+    var r=await fetch(SB_URL+'/rest/v1/ingresos_data?mes=eq.'+MES_NUM+'&select=*&limit=5000',{headers:SBH});
     var all=await r.json();
 
     if(!Array.isArray(all)||!all.length){
@@ -293,16 +268,10 @@ async function build(){
     var imp=all.filter(function(u){return(u.origen||'').toUpperCase()==='IMPORTADO';});
     var pend=all.filter(function(u){return(u.estado||'').toUpperCase()==='P';});
 
-    function sumField(arr,field){return arr.reduce(function(s,u){return s+(parseFloat(u[field])||0);},0);}
+    function sumField(arr,field){return arr.reduce(function(s,u){return s+(+u[field]||0);},0);}
     function byBU(arr){
       var r={FTW:{u:0,f:0},APP:{u:0,f:0},EQP:{u:0,f:0}};
-      arr.forEach(function(u){
-        var bu=(u.bu||'').toUpperCase();
-        if(r[bu]){
-          r[bu].u+=parseFloat(u.unidades)||0;
-          r[bu].f+=parseFloat(u.fisico)||0;
-        }
-      });
+      arr.forEach(function(u){if(r[u.bu]){r[u.bu].u+=(+u.unidades||0);r[u.bu].f+=(+u.fisico||0);}});
       return r;
     }
 
@@ -331,14 +300,12 @@ async function build(){
     // Gráfico origen
     new Chart(document.getElementById('chartOrigen'),{
       type:'doughnut',
-      data:{labels:['Nacional ('+nac.length+')','Importado ('+imp.length+')'],datasets:[{
+      data:{labels:['Nacional','Importado'],datasets:[{
         data:[nac.length,imp.length],
         backgroundColor:['#1A2B5E80','#E31E2480'],
         borderColor:['#1A2B5E','#E31E24'],borderWidth:2
       }]},
-      options:{responsive:true,plugins:{
-        legend:{labels:{color:'#64748b',font:{size:11},boxWidth:12}}
-      },cutout:'60%'}
+      options:{responsive:true,plugins:{legend:{labels:{color:'#64748b',font:{size:11},boxWidth:12}}},cutout:'60%'}
     });
 
     // Gráfico BU global
@@ -404,58 +371,6 @@ async function build(){
           '</tr>';
       }).join('')||
       '<tr><td colspan="9" style="text-align:center;color:var(--green);padding:24px;font-weight:600">✓ Sin pendientes al cierre del mes</td></tr>';
-
-
-    // ── Tablas resumen visibles para PDF ──────────────────────────────
-    function mkResumenRow(label, v1, v2, color){
-      return '<div style="display:grid;grid-template-columns:120px 1fr 1fr;gap:4px;padding:6px 10px;background:var(--surface);border-radius:6px;margin-bottom:4px;align-items:center">'+
-        '<span style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase">'+label+'</span>'+
-        '<span style="font-family:var(--mono);font-size:13px;font-weight:700;color:'+color+'">'+v1+'</span>'+
-        '<span style="font-family:var(--mono);font-size:13px;font-weight:700;color:#16a34a">'+v2+'</span>'+
-        '</div>';
-    }
-    function mkResumenHeader(lbl1, lbl2){
-      return '<div style="display:grid;grid-template-columns:120px 1fr 1fr;gap:4px;padding:4px 10px;margin-bottom:4px">'+
-        '<span></span>'+
-        '<span style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase">'+lbl1+'</span>'+
-        '<span style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase">'+lbl2+'</span>'+
-        '</div>';
-    }
-
-    // Origen
-    document.getElementById('tablaOrigenResumen').innerHTML=
-      '<div style="background:var(--surface);border-radius:8px;padding:10px">'+
-      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+
-      '<div style="text-align:center;padding:10px;background:#1A2B5E10;border-radius:6px;border-top:3px solid #1A2B5E">'+
-        '<div style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:4px">Nacional</div>'+
-        '<div style="font-size:24px;font-weight:900;font-family:var(--mono);color:#1A2B5E">'+nac.length+'</div>'+
-        '<div style="font-size:10px;color:var(--muted2)">deliveries</div></div>'+
-      '<div style="text-align:center;padding:10px;background:#E31E2410;border-radius:6px;border-top:3px solid #E31E24">'+
-        '<div style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:4px">Importado</div>'+
-        '<div style="font-size:24px;font-weight:900;font-family:var(--mono);color:#E31E24">'+imp.length+'</div>'+
-        '<div style="font-size:10px;color:var(--muted2)">deliveries</div></div>'+
-      '</div></div>';
-
-    // BU global
-    document.getElementById('tablaBUResumen').innerHTML=
-      mkResumenHeader('Unidades','Físico')+
-      mkResumenRow('FTW',buG.FTW.u.toLocaleString('es-AR'),buG.FTW.f.toLocaleString('es-AR'),'#1A2B5E')+
-      mkResumenRow('APP',buG.APP.u.toLocaleString('es-AR'),buG.APP.f.toLocaleString('es-AR'),'#E31E24')+
-      mkResumenRow('EQP',buG.EQP.u.toLocaleString('es-AR'),buG.EQP.f.toLocaleString('es-AR'),'#d97706');
-
-    // BU Nacional
-    document.getElementById('tablaNacBUResumen').innerHTML=
-      mkResumenHeader('Unidades','Físico')+
-      mkResumenRow('FTW',buN.FTW.u.toLocaleString('es-AR'),buN.FTW.f.toLocaleString('es-AR'),'#1A2B5E')+
-      mkResumenRow('APP',buN.APP.u.toLocaleString('es-AR'),buN.APP.f.toLocaleString('es-AR'),'#E31E24')+
-      mkResumenRow('EQP',buN.EQP.u.toLocaleString('es-AR'),buN.EQP.f.toLocaleString('es-AR'),'#d97706');
-
-    // BU Importado
-    document.getElementById('tablaImpBUResumen').innerHTML=
-      mkResumenHeader('Unidades','Físico')+
-      mkResumenRow('FTW',buI.FTW.u.toLocaleString('es-AR'),buI.FTW.f.toLocaleString('es-AR'),'#1A2B5E')+
-      mkResumenRow('APP',buI.APP.u.toLocaleString('es-AR'),buI.APP.f.toLocaleString('es-AR'),'#E31E24')+
-      mkResumenRow('EQP',buI.EQP.u.toLocaleString('es-AR'),buI.EQP.f.toLocaleString('es-AR'),'#d97706');
 
     document.getElementById('loadingScreen').style.display='none';
     document.getElementById('report').style.display='block';
